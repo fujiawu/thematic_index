@@ -61,11 +61,11 @@ def google_trend_info(keyword):
     except RuntimeError:
         pass
     try:
-        result["related_quries"] = pytrend.related_queries()
+        result["related_queries"] = pytrend.related_queries()[keyword]
     except RuntimeError:
         pass
     try:
-        result["related_topics"] = pytrend.related_topics()
+        result["related_topics"] = pytrend.related_topics()[keyword]
     except RuntimeError:
         pass
     return result
