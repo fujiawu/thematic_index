@@ -53,10 +53,7 @@ def google_trend_info(keyword):
     """
     result = dict()
     pytrend = TrendReq()
-    try:
-        pytrend.build_payload(kw_list=[keyword])
-    except requests.exceptions.RequestException:
-        return None
+    pytrend.build_payload(kw_list=[keyword])
     try:
         result["suggestions"] = pytrend.suggestions(keyword=keyword)
     except RuntimeError:
