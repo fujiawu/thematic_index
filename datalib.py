@@ -5,6 +5,7 @@ This is the module for data library
 import csv
 import json
 import requests
+from collections import deque
 from pytrends.request import TrendReq
 
 
@@ -69,6 +70,49 @@ def google_trend_info(keyword):
     except RuntimeError:
         pass
     return result
+
+
+def build_google_trend_topic_net(starting_topics, stopping_level, savefilename):
+    """
+    :param starting_topics: starting topics to search
+    :param stopping_level: the level to stop from the starting_topics
+    :param savefilename: filename to save query result
+    """
+    # initialization
+    queue = deque()
+    searched = dict()
+    for key in starting_topics:
+        queue.append((key, 0))
+
+    save_freq = 10
+
+    # run google trend query
+    count = 0
+    while len(queue):
+
+        keyword, level = queue.popleft()
+        print 'working on:"' + keyword + '", level:' + str(level)
+
+        if level > stopping_level:
+            continue
+
+        gtrend = google_trend_info(keyword)
+
+        if gtrend is None:
+            print "Cannot get google trend info for " + keyword
+            continue
+
+        related_topics = gtrend["related_topics"]["title"].tolist()
+
+        for key in related_topics:
+            if key not in searched.keys():
+                queue.append((key, level + 1))
+
+        count += 1
+        if count == save_freq:
+            count = 0
+            with open("datafile\\" + savefilename, 'w') as fp:
+                json.dump(searched, fp)
 
 
 def test():
