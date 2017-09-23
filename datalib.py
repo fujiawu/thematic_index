@@ -49,10 +49,22 @@ def google_trend_info(keyword):
     """
     result = dict()
     pytrend = TrendReq()
-    pytrend.build_payload(kw_list=[keyword])
-    result["suggestions"] = pytrend.suggestions(keyword=keyword)
-    result["related_quries"] = pytrend.related_queries()
-    result["related_topics"] = pytrend.related_topics()
+    try:
+        pytrend.build_payload(kw_list=[keyword])
+    except requests.exceptions.RequestException:
+        return None
+    try:
+        result["suggestions"] = pytrend.suggestions(keyword=keyword)
+    except RuntimeError:
+        pass
+    try:
+        result["related_quries"] = pytrend.related_queries()
+    except RuntimeError:
+        pass
+    try:
+        result["related_topics"] = pytrend.related_topics()
+    except RuntimeError:
+        pass
     return result
 
 
@@ -60,5 +72,5 @@ def test():
     """Testing Docstring"""
     pass
 
-if __name__=='__main__':
+if __name__ == '__main__':
     test()
