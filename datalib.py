@@ -33,12 +33,15 @@ def google_finance_info(symbol):
     :return: result: info read from google finance
     """
     url = "https://finance.google.com/finance?q=" + symbol + "&output=json"
-    rsp = requests.get(url)
-    raw_data = json.loads(rsp.content[6:-2].decode('unicode_escape'))
-    result = dict()
-    result["beta"] = raw_data["beta"]
-    result["description"] = raw_data['summary'][0]['overview']
-    return result
+    try:
+        rsp = requests.get(url)
+        raw_data = json.loads(rsp.content[6:-2].decode('unicode_escape'))
+        result = dict()
+        result["beta"] = raw_data["beta"]
+        result["description"] = raw_data['summary'][0]['overview']
+        return result
+    except requests.exceptions.RequestException:
+        return None
 
 
 def google_trend_info(keyword):
