@@ -3,6 +3,8 @@ This is the module for data library
 """
 
 import csv
+import json
+import requests
 
 
 def stocks_info_from_exchanges():
@@ -22,6 +24,21 @@ def stocks_info_from_exchanges():
                 symbols.append(row.copy())
                 stockinfo[exchange] = symbols
     return stockinfo
+
+
+def google_finance_info(symbol):
+    """
+    Read text info from google finance
+    :param symbol:
+    :return: dict
+    """
+    url = "https://finance.google.com/finance?q=" + symbol + "&output=json"
+    rsp = requests.get(url)
+    raw_data = json.loads(rsp.content[6:-2].decode('unicode_escape'))
+    result = dict()
+    result["beta"] = raw_data["beta"]
+    result["description"] = raw_data['summary'][0]['overview']
+    return result
 
 
 def test():
