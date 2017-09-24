@@ -41,6 +41,7 @@ limit = 1000000
 for fullsymbol in gfinance_stocks:
 
     if fullsymbol in stock_scores.keys():
+        print fullsymbol + " exists"
         continue
 
     stock = gfinance_stocks[fullsymbol]
