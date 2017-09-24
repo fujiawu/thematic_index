@@ -9,8 +9,8 @@ with open("datafile\\" + jsonsavefilename, 'r') as fp:
     stock_scores = json.load(fp)
 
 # number of stocks to be selected
-num_of_stocks = 100
-score_threshold = 2
+num_of_stocks = 500
+score_threshold = 0.3
 
 # get a list of all stocks with scores
 stock_list = []
@@ -30,7 +30,7 @@ for stock in stock_list:
 for stock in stock_list:
     stock["normalized_score"] = stock["score"] / total_weight
     stock["normalized_mktcap"] = stock["mktcap"] / total_mktcap
-    stock["final_score"] = stock["normalized_score"] + stock["normalized_mktcap"] ** 0.0001
+    stock["final_score"] = stock["normalized_score"] + 0.02 * stock["normalized_mktcap"]
 
 # score company by list
 stock_list = sorted(stock_list, key=lambda k: k['final_score'], reverse=True)
@@ -51,10 +51,8 @@ for stock in stock_list:
 final_list = []
 for stock in selected_stock_list:
     weight = stock["final_score"] / total_final_score
-    item = {"symbol": stock["symbol"], "exchange": stock["exchange"],
-            "name": stock["name"], "weight": weight,
-            "score": stock["score"],
-            "mktcap": stock["mktcap"]}
+    item = {"symbol": stock["symbol"], "name": stock["name"], "weight": weight,
+            "score": stock["score"], "mktcap": stock["mktcap"]}
     final_list.append(item)
     pp.pprint(item)
 
