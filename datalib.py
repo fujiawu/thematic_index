@@ -117,10 +117,11 @@ def build_google_trend_topic_net(starting_topics, stopping_level, savefilename):
 
         try:
             related_topics = gtrend["related_topics"]["title"].tolist()
-        except (RuntimeError, KeyError):
+        except (RuntimeError, KeyError, TypeError):
             continue
 
         for key in related_topics:
+            key = key.lower()
             if key not in searched.keys() and is_ascii(key):
                 queue.append((key, level + 1))
                 searched[key] = level+1
