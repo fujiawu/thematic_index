@@ -6,23 +6,23 @@ from datalib import *
 import re
 
 
-def compare_words(word, topic):
+def compare_tokens(word, topic):
     """
     decide whether the topic include this word
     :param word: word to search in the topic
     :param topic: topic to search in
     :return: percentage of characters that matched
     """
-    tokens = re.split("[(/), !;?:.]+", topic)
+    topic = topic.replace(".", "").replace("-", "").lower()
+    word = word.replace(".", "").replace("-", "").lower()
+    topics = re.split("[(/), !;?:.]+", topic)
+    words = re.split("[ ]+", word)
     matched = 0
-    total = 0
-    for token in tokens:
-        t = token.replace(".", "").replace("-", "").lower()
-        w = word.replace(".", "").replace("-", "")
-        if t == w:
-            matched += len(w)
-        total += len(t)
-    return float(matched) / float(total)
+    for t in topics:
+        for w in words:
+            if t == w:
+                matched += len(w)
+    return float(matched) / float(max(len(topic), len(word)))
 
 
 def find_word_match(description, topics):
@@ -40,15 +40,22 @@ def find_word_match(description, topics):
                     "good", "your", "some", "could", "them", "see", "other", "then", "now", "look",
                     "after", "also", "over", "its", "two", "how", "our", "work", "well", "most",
                     "any", "want", "way", "day", "because", "place", "number", "group", "fact",
-                    "thing", "person", "high"]
-    matched = []
+                    "thing", "person", "high", "service", "services", "staffing", "staff", "technology",
+                    "information", "info"]
+    adjusted_word_list = []
     for word in words:
         word = word.lower()
         if is_ascii(word) and len(word) > 2 and word not in trivial_list:
-            for topic in topics:
-                match_rate = compare_words(word, topic)
-                if match_rate:
-                    matched.append({"topic" : topic, "word" : word, "match_rate": match_rate, "level" : topics[topic]})
+            adjusted_word_list.append(word)
+    two_grams = []
+    for i in range(len(adjusted_word_list)-1):
+        two_grams.append(adjusted_word_list[i]+" "+adjusted_word_list[i+1])
+    matched = []
+    for words in two_grams:
+        for topic in topics:
+            match_rate = compare_tokens(words, topic)
+            if match_rate:
+                matched.append({"topic": topic, "words": words, "match_rate": match_rate, "level": topics[topic]})
     return matched
 
 
@@ -58,11 +65,12 @@ def compute_score(matched):
     :param matched: a list of words found with level
     :return: socre: numeric
     """
-    level_to_score = [100, 40, 10, 5, 2, 1 ]
+    level_to_score = [3, 0.5, 0.1, 0.05, 0.02, 0.01, 0.005 ]
+    power = 3
     score = 0
     for m in matched:
         if m["level"] < len(level_to_score):
-            print m["word"], m["level"], m["match_rate"]
-            score += level_to_score[m["level"]]*m["match_rate"]
+            # print "%s,%s,%d,%2.2f" % (m["words"], m["topic"], m["level"], m["match_rate"])
+            score += level_to_score[m["level"]]*m["match_rate"]**power
     return score
 
