@@ -40,6 +40,7 @@ def google_finance_info(symbol):
         result = dict()
         try:
             result["beta"] = raw_data["beta"]
+            result["mktcap"] = raw_data["mc"]
             result["description"] = raw_data['summary'][0]['overview']
         except (RuntimeError, KeyError):
             pass
@@ -141,20 +142,33 @@ def cache_google_finance_info(savefilename):
     :param savefilename: filename for the cache
     :return: none
     """
-    save_freq = 10
+
+    try:
+        with open("datafile\\" + savefilename, 'r') as fp:
+            cached_gfinance_info = json.load(fp)
+    except IOError:
+        cached_gfinance_info = dict()
+
+    save_freq = 5
     all_stocks = stocks_info_from_exchanges()
-    cached_gfinance_info = []
     count = 0
     for exchange in all_stocks:
         stocks = all_stocks[exchange]
         for stock in stocks:
             symbol = stock["Symbol"]
-            print "working on " + symbol
+            if symbol in cached_gfinance_info.keys():
+                continue
             try:
                 gfinance_info = google_finance_info(symbol)
             except ValueError:
-                continue
-            if gfinance_info and "beta" in gfinance_info.keys() and "description" in gfinance_info.keys():
+                try:
+                    gfinance_info = google_finance_info(exchange+":"+symbol)
+                except ValueError:
+                    print "cannot get google finance for: ", symbol
+                    continue
+            if gfinance_info and "beta" in gfinance_info.keys() \
+                and "description" in gfinance_info.keys()\
+                    and "mktcap" in gfinance_info.keys():
                 item = {"symbol": symbol,
                         "beta": gfinance_info["beta"],
                         "description": gfinance_info["description"],
@@ -162,13 +176,16 @@ def cache_google_finance_info(savefilename):
                         "sector": stock["Sector"],
                         "name": stock["Name"],
                         "industry": stock["industry"],
+                        "mktcap": gfinance_info["mktcap"],
                         }
-                cached_gfinance_info.append(item)
+                cached_gfinance_info[symbol] = item
+                print "got %s from %s" % (symbol, item["exchange"])
                 count += 1
                 if count == save_freq:
                     with open("datafile\\" + savefilename, 'w') as fp:
                         json.dump(cached_gfinance_info, fp)
                     count = 0
+                    print "file updated"
     with open("datafile\\" + savefilename, 'w') as fp:
         json.dump(cached_gfinance_info, fp)
 

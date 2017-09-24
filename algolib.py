@@ -41,7 +41,8 @@ def find_word_match(description, topics):
                     "after", "also", "over", "its", "two", "how", "our", "work", "well", "most",
                     "any", "want", "way", "day", "because", "place", "number", "group", "fact",
                     "thing", "person", "high", "service", "services", "staffing", "staff", "technology",
-                    "information", "info"]
+                    "information", "info", "corporation", "limited", "private", "municipal", "management",
+                    "investment", "level", "income", "federal", "tax", "dollar", "bond", "bonds"]
     adjusted_word_list = []
     for word in words:
         word = word.lower()
