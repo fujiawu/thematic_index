@@ -80,8 +80,9 @@ def build_google_trend_topic_net(starting_topics, stopping_level, savefilename):
     searched = dict()
     for key in starting_topics:
         queue.append((key, 0))
+        searched[key] = 0
 
-    save_freq = 10
+    save_freq = 1
 
     # run google trend query
     count = 0
@@ -104,12 +105,13 @@ def build_google_trend_topic_net(starting_topics, stopping_level, savefilename):
         for key in related_topics:
             if key not in searched.keys():
                 queue.append((key, level + 1))
+                searched[key] = level+1
 
         count += 1
         if count == save_freq:
-            count = 0
             with open("datafile\\" + savefilename, 'w') as fp:
                 json.dump(searched, fp)
+            count = 0
 
 
 def test():
