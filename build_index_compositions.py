@@ -30,7 +30,7 @@ for stock in stock_list:
 for stock in stock_list:
     stock["normalized_score"] = stock["score"] / total_weight
     stock["normalized_mktcap"] = stock["mktcap"] / total_mktcap
-    stock["final_score"] = stock["normalized_score"] + 0.01 * stock["normalized_mktcap"]
+    stock["final_score"] = stock["normalized_score"] + stock["normalized_mktcap"] ** 0.0001
 
 # score company by list
 stock_list = sorted(stock_list, key=lambda k: k['final_score'], reverse=True)

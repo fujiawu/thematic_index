@@ -64,10 +64,10 @@ def compute_score(matched):
     """
     given matched words found, compute score using custom function
     :param matched: a list of words found with level
-    :return: socre: numeric
+    :return: score: numeric
     """
-    level_to_score = [3, 0.5, 0.1, 0.05, 0.02, 0.01, 0.005 ]
-    power = 3
+    level_to_score = [3, 0.5, 0.1, 0.05, 0.02, 0.01, 0.005]
+    power = 10
     score = 0
     for m in matched:
         if m["level"] < len(level_to_score):

@@ -38,25 +38,24 @@ except IOError:
 # start computing
 count = 0
 limit = 1000000
-for symbol in gfinance_stocks:
+for fullsymbol in gfinance_stocks:
 
-    stock = gfinance_stocks[symbol]
-    if symbol in stock_scores.keys():
+    if fullsymbol in stock_scores.keys():
         continue
+
+    stock = gfinance_stocks[fullsymbol]
     description = stock["description"]
     matched = find_word_match(description, gtrend_topics)
     score = compute_score(matched)
     try:
-        stock_scores[symbol] = {"exchange": stock["exchange"], "score": score,
-                                "name": stock["name"], "beta": stock["beta"],
-                                "mktcap": mktcap_parser(stock["mktcap"])}
+        stock_scores[fullsymbol] = {"score": score, "name": stock["name"], "beta": stock["beta"],
+                                    "mktcap": mktcap_parser(stock["mktcap"])}
     except (ValueError, IndexError):
         continue
-    print "%s,%s,%s,%2.2f,%s(%f)" % (stock["exchange"], stock["symbol"].replace(" ", ""),
-                                     stock["name"], score, stock["mktcap"], stock_scores[symbol]["mktcap"])
+    print "%s,%s,%2.2f,%s(%f)" % (fullsymbol, stock["name"], score, stock["mktcap"],
+                                  stock_scores[fullsymbol]["mktcap"])
     with open("datafile\\" + jsonsavefilename, 'w') as fp:
         json.dump(stock_scores, fp)
     count += 1
     if count > limit:
         break
-

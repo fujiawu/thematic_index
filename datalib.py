@@ -7,6 +7,7 @@ import json
 import requests
 from collections import deque
 from pytrends.request import TrendReq
+import re
 
 
 def stocks_info_from_exchanges():
@@ -149,14 +150,22 @@ def cache_google_finance_info(savefilename):
     except IOError:
         cached_gfinance_info = dict()
 
-    save_freq = 5
+    save_freq = 1
     all_stocks = stocks_info_from_exchanges()
     count = 0
     for exchange in all_stocks:
         stocks = all_stocks[exchange]
         for stock in stocks:
             symbol = stock["Symbol"]
-            if symbol in cached_gfinance_info.keys():
+
+            if not is_ascii(symbol):
+                continue
+            symbol_split = re.split("[\^.*-]+", symbol)
+            if len(symbol_split) < 1:
+                continue
+            symbol = symbol_split[0]
+            if exchange+":"+symbol in cached_gfinance_info.keys():
+                print "%s exists" % (exchange+":"+symbol)
                 continue
             try:
                 gfinance_info = google_finance_info(symbol)
@@ -164,7 +173,7 @@ def cache_google_finance_info(savefilename):
                 try:
                     gfinance_info = google_finance_info(exchange+":"+symbol)
                 except ValueError:
-                    print "cannot get google finance for: ", symbol
+                    print "cannot get google finance: ", exchange+":"+symbol
                     continue
             if gfinance_info and "beta" in gfinance_info.keys() \
                 and "description" in gfinance_info.keys()\
@@ -178,8 +187,8 @@ def cache_google_finance_info(savefilename):
                         "industry": stock["industry"],
                         "mktcap": gfinance_info["mktcap"],
                         }
-                cached_gfinance_info[symbol] = item
-                print "got %s from %s" % (symbol, item["exchange"])
+                cached_gfinance_info[exchange+":"+symbol] = item
+                print "got %s" % (exchange+":"+symbol)
                 count += 1
                 if count == save_freq:
                     with open("datafile\\" + savefilename, 'w') as fp:
