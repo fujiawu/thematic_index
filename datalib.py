@@ -66,7 +66,7 @@ def google_trend_info(keyword):
     """
     try:
         result["related_topics"] = pytrend.related_topics()[keyword]
-    except RuntimeError:
+    except (RuntimeError, KeyError):
         pass
     return result
 
@@ -112,7 +112,10 @@ def build_google_trend_topic_net(starting_topics, stopping_level, savefilename):
             print "Cannot get google trend info for " + keyword
             continue
 
-        related_topics = gtrend["related_topics"]["title"].tolist()
+        try:
+            related_topics = gtrend["related_topics"]["title"].tolist()
+        except (RuntimeError, KeyError):
+            continue
 
         for key in related_topics:
             if key not in searched.keys() and is_ascii(key):
