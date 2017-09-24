@@ -38,8 +38,11 @@ def google_finance_info(symbol):
         rsp = requests.get(url)
         raw_data = json.loads(rsp.content[6:-2].decode('unicode_escape'))
         result = dict()
-        result["beta"] = raw_data["beta"]
-        result["description"] = raw_data['summary'][0]['overview']
+        try:
+            result["beta"] = raw_data["beta"]
+            result["description"] = raw_data['summary'][0]['overview']
+        except (RuntimeError, KeyError):
+            pass
         return result
     except requests.exceptions.RequestException:
         return None
@@ -93,7 +96,7 @@ def build_google_trend_topic_net(starting_topics, stopping_level, savefilename):
         queue.append((key, 0))
         searched[key] = 0
 
-    save_freq = 1
+    save_freq = 10
 
     # run google trend query
     count = 0
@@ -127,6 +130,46 @@ def build_google_trend_topic_net(starting_topics, stopping_level, savefilename):
             with open("datafile\\" + savefilename, 'w') as fp:
                 json.dump(searched, fp)
             count = 0
+    with open("datafile\\" + savefilename, 'w') as fp:
+        json.dump(searched, fp)
+
+
+def cache_google_finance_info(savefilename):
+    """
+    cache google finance info
+    :param savefilename: filename for the cache
+    :return: none
+    """
+    save_freq = 10
+    all_stocks = stocks_info_from_exchanges()
+    cached_gfinance_info = []
+    count = 0
+    for exchange in all_stocks:
+        stocks = all_stocks[exchange]
+        for stock in stocks:
+            symbol = stock["Symbol"]
+            print "working on " + symbol
+            try:
+                gfinance_info = google_finance_info(symbol)
+            except ValueError:
+                continue
+            if gfinance_info and "beta" in gfinance_info.keys() and "description" in gfinance_info.keys():
+                item = {"symbol": symbol,
+                        "beta": gfinance_info["beta"],
+                        "description": gfinance_info["description"],
+                        "exchange": exchange,
+                        "sector": stock["Sector"],
+                        "name": stock["Name"],
+                        "industry": stock["industry"],
+                        }
+                cached_gfinance_info.append(item)
+                count += 1
+                if count == save_freq:
+                    with open("datafile\\" + savefilename, 'w') as fp:
+                        json.dump(cached_gfinance_info, fp)
+                    count = 0
+    with open("datafile\\" + savefilename, 'w') as fp:
+        json.dump(cached_gfinance_info, fp)
 
 
 def test():
