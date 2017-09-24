@@ -71,6 +71,15 @@ def google_trend_info(keyword):
     return result
 
 
+def is_ascii(s):
+    """
+    check whether a string is ascii string or not
+    :param s: input string
+    :return: ascii string or not
+    """
+    return all(ord(c) < 128 for c in s)
+
+
 def build_google_trend_topic_net(starting_topics, stopping_level, savefilename):
     """
     :param starting_topics: starting topics to search
@@ -91,10 +100,11 @@ def build_google_trend_topic_net(starting_topics, stopping_level, savefilename):
     while len(queue):
 
         keyword, level = queue.popleft()
-        print 'working on:"' + keyword + '", level:' + str(level)
 
-        if level > stopping_level:
+        if level > stopping_level or not is_ascii(keyword):
             continue
+
+        print 'working on:"' + keyword + '", level:' + str(level)
 
         gtrend = google_trend_info(keyword)
 
@@ -105,7 +115,7 @@ def build_google_trend_topic_net(starting_topics, stopping_level, savefilename):
         related_topics = gtrend["related_topics"]["title"].tolist()
 
         for key in related_topics:
-            if key not in searched.keys():
+            if key not in searched.keys() and is_ascii(key):
                 queue.append((key, level + 1))
                 searched[key] = level+1
 
